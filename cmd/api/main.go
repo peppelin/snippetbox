@@ -6,6 +6,12 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
+	// Check if the path is different from the root folder and retunr
+	// a not found f that's the case
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
 	w.Write([]byte("hello snippetbox!"))
 }
 func snippetView(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +21,7 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Here you can create some snippets"))
 }
 func main() {
-	// We initialize a new ServerMux and assign the home to the main handler
+	// We initialize a new ServerMux and assign the handlers
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/snippet/view", snippetView)
