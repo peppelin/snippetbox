@@ -36,3 +36,8 @@ db-up:
 db-down:
 	@echo "\n> Stopping docker-compose";
 	@docker-compose stop
+## bd-init deletes any previos snippetbox database, creates a new one and populates it with basic info
+## Also creates a web user to connect
+db-init:
+	@echo "\n> populating database";
+	@mysql -h 127.0.0.1 -uroot -p < setup_mysql.sql
