@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -13,6 +14,10 @@ func main() {
 	// We need to parse the flag arguments, if not, it will get the default value
 	flag.Parse()
 
+	// create a new logger for INFO logs
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	// create a new logger for ERROR logs
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	// We initialize a new ServerMux and assign the handlers
 	mux := http.NewServeMux()
 
@@ -29,9 +34,7 @@ func main() {
 	mux.HandleFunc("/snippet/create", snippetCreate)
 
 	// Use listen and serve to start the new server.
-	log.Printf("Starting server in port %s", *addr)
+	infoLog.Printf("Starting server in port %s", *addr)
 	err := http.ListenAndServe(*addr, mux)
-	if err != nil {
-		log.Fatal(err)
-	}
+	errorLog.Fatal(err)
 }
