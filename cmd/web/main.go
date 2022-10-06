@@ -26,25 +26,12 @@ func main() {
 		// create a new logger for INFO logs
 		infoLog: log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime),
 	}
-	// We initialize a new ServerMux and assign the handlers
-	mux := http.NewServeMux()
 
-	// Serving static files
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-
-	// Use the mux.Handle() function to register the file server as the handler for
-	// all URL paths that start with "/static/". For matching paths, we strip the
-	// "/static" prefix before the request reaches the file server.
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet/view", app.snippetView)
-	mux.HandleFunc("/snippet/create", app.snippetCreate)
 	// Initialize http.Server
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: app.errorLog,
-		Handler:  mux,
+		Handler:  app.routes(),
 	}
 	// Use listen and serve to start the new server.
 	app.infoLog.Printf("Starting server in port %s", *addr)

@@ -10,7 +10,8 @@ import (
 // and sends a generic internalServerError to the user
 func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack)
-	app.errorLog.Print(trace)
+	// we nbeed to get the report from the original source, not from where the error is generated
+	app.errorLog.Output(2, trace)
 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
