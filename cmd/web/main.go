@@ -18,6 +18,7 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	// create a new logger for ERROR logs
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
 	// We initialize a new ServerMux and assign the handlers
 	mux := http.NewServeMux()
 
@@ -32,9 +33,15 @@ func main() {
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/snippet/view", snippetView)
 	mux.HandleFunc("/snippet/create", snippetCreate)
-
+	// Initialize http.Server
+	srv := &http.Server{
+		Addr:     *addr,
+		ErrorLog: errorLog,
+		Handler:  mux,
+	}
 	// Use listen and serve to start the new server.
 	infoLog.Printf("Starting server in port %s", *addr)
-	err := http.ListenAndServe(*addr, mux)
+	// Calling our nbew http server
+	err := srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
