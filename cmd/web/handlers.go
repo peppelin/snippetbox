@@ -23,21 +23,21 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		app.errorLog.Print(err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 	//executing the templates
 	err = ts.Execute(w, nil)
 	if err != nil {
 		app.errorLog.Print(err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 }
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
-		http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
 	fmt.Fprintf(w, "You requested ID: %d", id)
@@ -47,7 +47,8 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Allow", http.MethodPost)
 		// w.WriteHeader(http.StatusMethodNotAllowed)
 		// w.Write([]byte("method not allowed"))
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		// http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 	w.Write([]byte("Here you can create some snippets"))
