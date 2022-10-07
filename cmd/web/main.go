@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/peppelin/snippetbox/internal/models"
-	"github.com/peppelin/snippetbox/models"
 
 	_ "github.com/go-sql-driver/mysql"
 )

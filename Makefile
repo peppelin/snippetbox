@@ -17,7 +17,7 @@ docker_images = mysql
 
 ## help		Print project tasks help
 help: Makefile
-	@echo "\n ws-pdf-publish project tasks:\n";
+	@echo "\n Snippetbox project tasks:\n";
 	@sed -n 's/^##/	/p' $<;
 	@echo "\n";
 
@@ -28,16 +28,15 @@ help: Makefile
 ## # Install task ---------------------------------------------------
 ##
 
-## bd-up	start the mysql from the docker-compose.yaml
+## db-up	start the mysql from the docker-compose.yaml
 db-up:
 	@echo "\n> Starting docker-compose";
 	@docker-compose up -d
-## bd-down stop the mysql from the docker-compose.yaml
+## db-down stop the mysql from the docker-compose.yaml
 db-down:
 	@echo "\n> Stopping docker-compose";
 	@docker-compose stop
-## bd-init deletes any previos snippetbox database, creates a new one and populates it with basic info
-## Also creates a web user to connect
+## db-init deletes any previos snippetbox database, creates a new one and populates it with basic info
 db-init:
 	@echo "\n> populating database";
 	@mysql -h 127.0.0.1 -uroot -p < setup_mysql.sql
