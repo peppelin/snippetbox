@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +18,8 @@ type application struct {
 	infoLog  *log.Logger
 	// adding the snippetmodel to make it avaliable to the handlers
 	snippets *models.SnippetModel
+	//adding the cache template
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -38,13 +41,22 @@ func main() {
 	}
 	defer db.Close()
 
+	// Initialize the cache
+
+	templateCache, err := newTemplateCache()
+
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	// initialze our application
 	app := &application{
 		// create a new logger for ERROR logs
 		errorLog: errorLog,
 		// create a new logger for INFO logs
-		infoLog:  infoLog,
-		snippets: &models.SnippetModel{DB: db},
+		infoLog:       infoLog,
+		snippets:      &models.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 	// Initialize http.Server
 	srv := &http.Server{
