@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"runtime/debug"
@@ -30,6 +31,8 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 
 	// Retrieve the right templateset based on the name.
 	// if it doesn't exist, return a serverError()
+	// Page with errors found in ui/html/pages/error.tmpl
+	// rename it to view.tmpl
 
 	ts, ok := app.templateCache[page]
 	if !ok {
@@ -38,14 +41,21 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 		return
 	}
 
-	// write the header data
-	w.WriteHeader(status)
+	// Initialize a new buffer to store the rendered pages and check for errors
+	buf := new(bytes.Buffer)
 
-	// execute the template set
+	// render the page into the buffer and check for errors
 	err := ts.ExecuteTemplate(w, "base", data)
 
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
+
+	// write the header data
+	w.WriteHeader(status)
+
+	// Write the buffer content into the httwriter
+	buf.WriteTo(w)
 
 }
