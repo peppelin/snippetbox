@@ -56,7 +56,7 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	// write the header data
 	w.WriteHeader(status)
 
-	// Write the buffer content into the httwriter
+	// Write the buffer content into the httpwriter
 	buf.WriteTo(w)
 
 }
