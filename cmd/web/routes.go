@@ -2,7 +2,8 @@ package main
 
 import "net/http"
 
-func (app *application) routes() *http.ServeMux {
+// updated signature to return a http.Handler instead of *http.Servermux
+func (app *application) routes() http.Handler {
 	// We initialize a new ServerMux and assign the handlers
 	mux := http.NewServeMux()
 
@@ -17,5 +18,7 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("/", app.home)
 	mux.HandleFunc("/snippet/view", app.snippetView)
 	mux.HandleFunc("/snippet/create", app.snippetCreate)
-	return mux
+
+	//wrap the existing chain with the new logger
+	return app.logRequest(secureHeaders(mux))
 }
