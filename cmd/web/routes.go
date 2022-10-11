@@ -13,6 +13,8 @@ func (app *application) routes() http.Handler {
 	// Initializethe new router from julienschmidt/httprouter
 	router := httprouter.New()
 
+	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { app.notFound(w) })
+
 	// Serving static files
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	router.Handler(http.MethodGet, "/statis/*filepath", http.StripPrefix("/static", fileServer))
