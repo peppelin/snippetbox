@@ -20,5 +20,5 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
 	//wrap the existing chain with the new logger
-	return app.logRequest(secureHeaders(mux))
+	return app.recoveryPanic(app.logRequest(secureHeaders(mux)))
 }
