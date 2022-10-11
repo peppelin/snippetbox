@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/alice"
+)
 
 // updated signature to return a http.Handler instead of *http.Servermux
 func (app *application) routes() http.Handler {
@@ -19,6 +23,9 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("/snippet/view", app.snippetView)
 	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
-	//wrap the existing chain with the new logger
-	return app.recoveryPanic(app.logRequest(secureHeaders(mux)))
+	// Crteate the middleware chain
+	standard := alice.New(app.recoveryPanic, app.logRequest, secureHeaders)
+
+	//return the standard middleware with our mux using alice
+	return standard.Then(mux)
 }
