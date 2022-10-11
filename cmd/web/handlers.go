@@ -6,16 +6,20 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/peppelin/snippetbox/internal/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// Check if the path is different from the root folder and retunr
 	// a not found f that's the case
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
+	//
+	// New router takes care of thes piece of code below
+	//
+	// if r.URL.Path != "/" {
+	// 	http.NotFound(w, r)
+	// 	return
+	// }
 
 	snippets, err := app.snippets.Latest()
 
@@ -28,8 +32,12 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	app.render(w, http.StatusOK, "home.tmpl", data)
 }
+
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	// Reading the params from the new router
+	params := httprouter.ParamsFromContext(r.Context())
+
+	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil {
 		app.notFound(w)
 		return
@@ -49,7 +57,12 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 
 	app.render(w, http.StatusOK, "view.tmpl", data)
 }
+
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Display the form for creating the snippet..."))
+}
+
+func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		// w.WriteHeader(http.StatusMethodNotAllowed)
