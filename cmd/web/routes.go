@@ -17,7 +17,7 @@ func (app *application) routes() http.Handler {
 
 	// Serving static files
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	router.Handler(http.MethodGet, "/statis/*filepath", http.StripPrefix("/static", fileServer))
+	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
 	// Update routes with the new router
 	router.HandlerFunc(http.MethodGet, "/", app.home)
