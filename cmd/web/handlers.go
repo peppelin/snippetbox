@@ -59,18 +59,12 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Display the form for creating the snippet..."))
+	data := app.newTemplateData(r)
+	app.render(w, http.StatusOK, "create.tmpl", data)
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		// w.WriteHeader(http.StatusMethodNotAllowed)
-		// w.Write([]byte("method not allowed"))
-		// http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		app.clientError(w, http.StatusMethodNotAllowed)
-		return
-	}
+
 	// Create some variables holding dummy data. We'll remove these later on
 	// during the build.
 	title := "O snail"
