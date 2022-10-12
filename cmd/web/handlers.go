@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/peppelin/snippetbox/internal/models"
@@ -65,11 +67,45 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 
-	// Create some variables holding dummy data. We'll remove these later on
-	// during the build.
-	title := "O snail"
-	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
-	expires := 7
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Variable to store errors from the form
+	fieldErrors := make(map[string]string)
+
+	//Checking for empty title
+	if strings.TrimSpace(title) == "" {
+		fieldErrors["title"] = "title can't be empty"
+	} else if utf8.RuneCountInString(title) < 100 {
+		fieldErrors["title"] = "title can't be longer than 100 chars"
+	}
+
+	// Checking for empty content
+	if strings.TrimSpace(content) == "" {
+		fieldErrors["content"] = "content can't be empty"
+	}
+
+	// Checking for invalid expiration date
+	if expires != 1 && expires != 7 && expires != 365 {
+		fieldErrors["expires"] = "expiration time should be 1, 7 or 365"
+
+	}
+
+	if len(fieldErrors) > 0 {
+		fmt.Fprint(w, fieldErrors)
+		return
+	}
 	// Pass the data to the SnippetModel.Insert() method, receiving the // ID of the new record back.
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
@@ -77,5 +113,5 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 	// Redirect the user to the relevant page for the snippet.
-	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
