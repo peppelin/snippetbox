@@ -7,9 +7,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/peppelin/snippetbox/internal/models"
 
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -23,12 +26,13 @@ type application struct {
 	templateCache map[string]*template.Template
 	// form decoder
 	formDecoder *form.Decoder
+	//session manager from github.com/alexedwards/scs/v2
+	sessionManager *scs.SessionManager
 }
 
 func main() {
 	// Adding command line arguments
 	addr := flag.String("addr", ":4000", "HTTP network address")
-
 	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=True", "MySQL data source name")
 
 	// We need to parse the flag arguments, if not, it will get the default value
@@ -55,15 +59,21 @@ func main() {
 	// initialize form decoder
 	formDecoder := form.NewDecoder()
 
+	// initialize session manager
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
 	// initialze our application
 	app := &application{
 		// create a new logger for ERROR logs
 		errorLog: errorLog,
 		// create a new logger for INFO logs
-		infoLog:       infoLog,
-		snippets:      &models.SnippetModel{DB: db},
-		templateCache: templateCache,
-		formDecoder:   formDecoder,
+		infoLog:        infoLog,
+		snippets:       &models.SnippetModel{DB: db},
+		templateCache:  templateCache,
+		formDecoder:    formDecoder,
+		sessionManager: sessionManager,
 	}
 	// Initialize http.Server
 	srv := &http.Server{
