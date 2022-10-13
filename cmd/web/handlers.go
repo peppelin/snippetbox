@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/peppelin/snippetbox/internal/models"
@@ -14,11 +12,10 @@ import (
 )
 
 type snippetCreateForm struct {
-	Title       string
-	Content     string
-	Expires     int
-	FieldErrors map[string]string
-	Validator   validator.Validator
+	Title     string
+	Content   string
+	Expires   int
+	Validator validator.Validator
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -94,31 +91,18 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	}
 
 	form := snippetCreateForm{
-		Title:       r.PostForm.Get("title"),
-		Content:     r.PostForm.Get("content"),
-		Expires:     expires,
+		Title:   r.PostForm.Get("title"),
+		Content: r.PostForm.Get("content"),
+		Expires: expires,
 	}
 
 	//Checking for empty title
-	form.Validator.CheckField(form.Validator.NotBlank(form.Title),"title", "title can't be empty")
-	form.Validator.CheckField(form.Validator.MaxChars(form.Title, 100),"title", "title can't be empty")
-	
-	} else if utf8.RuneCountInString(form.Title) > 100 {
-		form.FieldErrors["title"] = "title can't be longer than 100 chars"
-	}
+	form.Validator.CheckField(form.Validator.NotBlank(form.Title), "title", "title can't be empty")
+	form.Validator.CheckField(form.Validator.MaxChars(form.Title, 100), "title", "title can't be longer than 100 chars")
+	form.Validator.CheckField(form.Validator.NotBlank(form.Content), "content", "content can't be empty")
+	form.Validator.CheckField(form.Validator.PermitedInt(form.Expires, 1, 7, 365), "expires", "expiration time should be 1, 7 or 365")
 
-	// Checking for empty content
-	if strings.TrimSpace(form.Content) == "" {
-		form.FieldErrors["content"] = "content can't be empty"
-	}
-
-	// Checking for invalid expiration date
-	if form.Expires != 1 && form.Expires != 7 && form.Expires != 365 {
-		form.FieldErrors["expires"] = "expiration time should be 1, 7 or 365"
-
-	}
-
-	if len(form.FieldErrors) > 0 {
+	if form.Validator.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
