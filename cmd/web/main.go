@@ -10,6 +10,7 @@ import (
 
 	"github.com/peppelin/snippetbox/internal/models"
 
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -20,6 +21,8 @@ type application struct {
 	snippets *models.SnippetModel
 	//adding the cache template
 	templateCache map[string]*template.Template
+	// form decoder
+	formDecoder *form.Decoder
 }
 
 func main() {
@@ -49,6 +52,9 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	// initialize form decoder
+	formDecoder := form.NewDecoder()
+
 	// initialze our application
 	app := &application{
 		// create a new logger for ERROR logs
@@ -57,6 +63,7 @@ func main() {
 		infoLog:       infoLog,
 		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 	// Initialize http.Server
 	srv := &http.Server{

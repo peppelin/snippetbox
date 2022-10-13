@@ -11,11 +11,12 @@ import (
 	"github.com/peppelin/snippetbox/internal/validator"
 )
 
+// Adding the struct tags so form.Decoder can get them from the form.
 type snippetCreateForm struct {
-	Title     string
-	Content   string
-	Expires   int
-	Validator validator.Validator
+	Title     string              `form:"title"`
+	Content   string              `form:"content"`
+	Expires   int                 `form:"expires"`
+	Validator validator.Validator `form:"-"`
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +63,6 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	//using the newTemplateData
 	data := app.newTemplateData(r)
 	data.Snippet = snippet
-
 	app.render(w, http.StatusOK, "view.tmpl", data)
 }
 
@@ -72,28 +72,15 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	data.Form = snippetCreateForm{
 		Expires: 365,
 	}
-
 	app.render(w, http.StatusOK, "create.tmpl", data)
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
-
-	err := r.ParseForm()
+	var form snippetCreateForm
+	err := app.DecodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
-	}
-
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
-	form := snippetCreateForm{
-		Title:   r.PostForm.Get("title"),
-		Content: r.PostForm.Get("content"),
-		Expires: expires,
 	}
 
 	//Checking for empty title
