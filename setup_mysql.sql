@@ -31,3 +31,11 @@ CREATE USER IF NOT EXISTS 'web'@'%';
 GRANT SELECT, INSERT, UPDATE, DELETE ON snippetbox.* TO 'web'@'%'; 
 -- Important: Make sure to swap 'pass' with a password of your own choosing. 
 ALTER USER 'web'@'%' IDENTIFIED BY 'pass';
+
+-- Session manager
+USE snippetbox;
+CREATE TABLE sessions (
+token CHAR(43) PRIMARY KEY, data BLOB NOT NULL,
+expiry TIMESTAMP(6) NOT NULL
+);
+CREATE INDEX sessions_expiry_idx ON sessions (expiry);
