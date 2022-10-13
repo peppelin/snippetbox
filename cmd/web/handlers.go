@@ -10,6 +10,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/peppelin/snippetbox/internal/models"
+	"github.com/peppelin/snippetbox/internal/validator"
 )
 
 type snippetCreateForm struct {
@@ -17,6 +18,7 @@ type snippetCreateForm struct {
 	Content     string
 	Expires     int
 	FieldErrors map[string]string
+	Validator   validator.Validator
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -95,12 +97,12 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		Title:       r.PostForm.Get("title"),
 		Content:     r.PostForm.Get("content"),
 		Expires:     expires,
-		FieldErrors: map[string]string{},
 	}
 
 	//Checking for empty title
-	if strings.TrimSpace(form.Title) == "" {
-		form.FieldErrors["title"] = "title can't be empty"
+	form.Validator.CheckField(form.Validator.NotBlank(form.Title),"title", "title can't be empty")
+	form.Validator.CheckField(form.Validator.MaxChars(form.Title, 100),"title", "title can't be empty")
+	
 	} else if utf8.RuneCountInString(form.Title) > 100 {
 		form.FieldErrors["title"] = "title can't be longer than 100 chars"
 	}
