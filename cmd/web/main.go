@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"html/template"
@@ -63,6 +64,8 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
+	//securing session cookies
+	sessionManager.Cookie.Secure = true
 
 	// initialze our application
 	app := &application{
@@ -75,16 +78,23 @@ func main() {
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
 	}
+
+	// tls config
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
 	// Initialize http.Server
 	srv := &http.Server{
-		Addr:     *addr,
-		ErrorLog: app.errorLog,
-		Handler:  app.routes(),
+		Addr:      *addr,
+		ErrorLog:  app.errorLog,
+		Handler:   app.routes(),
+		TLSConfig: tlsConfig,
 	}
 	// Use listen and serve to start the new server.
 	app.infoLog.Printf("Starting server in port %s", *addr)
 	// Calling our nbew http server
-	err = srv.ListenAndServe()
+	// Adding tls
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	app.errorLog.Fatal(err)
 }
 
