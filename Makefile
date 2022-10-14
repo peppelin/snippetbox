@@ -40,3 +40,7 @@ db-down:
 db-init:
 	@echo "\n> populating database";
 	@mysql -h 127.0.0.1 -uroot -p < setup_mysql.sql
+## cert-gen generates the tls certificates and stores intop tls folder
+cert-gen:
+	@mkdir tls; 
+	@cd tls && go run /Users/gargallo/.gvm/gos/go1.19.2/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
