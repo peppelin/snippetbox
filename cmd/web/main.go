@@ -85,10 +85,11 @@ func main() {
 	}
 	// Initialize http.Server
 	srv := &http.Server{
-		Addr:      *addr,
-		ErrorLog:  app.errorLog,
-		Handler:   app.routes(),
-		TLSConfig: tlsConfig,
+		Addr:           *addr,
+		MaxHeaderBytes: 524288,
+		ErrorLog:       app.errorLog,
+		Handler:        app.routes(),
+		TLSConfig:      tlsConfig,
 		// setting timeouts
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
