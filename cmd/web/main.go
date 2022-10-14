@@ -89,6 +89,10 @@ func main() {
 		ErrorLog:  app.errorLog,
 		Handler:   app.routes(),
 		TLSConfig: tlsConfig,
+		// setting timeouts
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 	// Use listen and serve to start the new server.
 	app.infoLog.Printf("Starting server in port %s", *addr)
