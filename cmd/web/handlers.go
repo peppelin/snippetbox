@@ -60,9 +60,11 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
 	//using the newTemplateData
 	data := app.newTemplateData(r)
 	data.Snippet = snippet
+
 	app.render(w, http.StatusOK, "view.tmpl", data)
 }
 
@@ -102,6 +104,10 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.serverError(w, err)
 		return
 	}
+
+	//we'll use the put() method to store the message in the session for succesfully created snippet
+	app.sessionManager.Put(r.Context(), "flash", "Snippet created successfully!")
+
 	// Redirect the user to the relevant page for the snippet.
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
