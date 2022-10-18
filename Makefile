@@ -11,7 +11,9 @@ docker_images = mysql
 # test_packages = $(shell go list ./... | grep -v 'snippetbox$$' | grep -v '/test')
 
 # Tasks -------------------------------------------------------------
-
+## run Executes snippet application
+run:
+	@go run ./cmd/web -addr=:4000
 ## # Help task ------------------------------------------------------
 ##
 
