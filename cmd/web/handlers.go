@@ -19,6 +19,14 @@ type snippetCreateForm struct {
 	Validator validator.Validator `form:"-"`
 }
 
+// addiong snippetSignupForm
+type userSignupForm struct {
+	Name      string              `form:"name"`
+	Email     string              `form:"email"`
+	Password  string              `form:"password"`
+	Validator validator.Validator `form:"-"`
+}
+
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// Check if the path is different from the root folder and retunr
 	// a not found f that's the case
@@ -119,7 +127,9 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Authenticate a new user")
 }
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display HTML for signing in a user")
+	data := app.newTemplateData(r)
+	data.Form = userSignupForm{}
+	app.render(w, http.StatusOK, "signup.tmpl", data)
 }
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Create a new user")
