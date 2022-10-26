@@ -29,6 +29,8 @@ type application struct {
 	formDecoder *form.Decoder
 	//session manager from github.com/alexedwards/scs/v2
 	sessionManager *scs.SessionManager
+	//UserModel
+	users *models.UserModel
 }
 
 func main() {
@@ -74,6 +76,7 @@ func main() {
 		// create a new logger for INFO logs
 		infoLog:        infoLog,
 		snippets:       &models.SnippetModel{DB: db},
+		users:          &models.UserModel{DB: db},
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
