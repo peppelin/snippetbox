@@ -32,12 +32,12 @@ help: Makefile
 
 ## db-up	start the mysql from the docker-compose.yaml
 db-up:
-	@echo "\n> Starting docker-compose";
-	@docker-compose up -d
+	@echo "\n> Starting docker-compose conainerd";
+	@lima nerdctl compose up -d
 ## db-down stop the mysql from the docker-compose.yaml
 db-down:
 	@echo "\n> Stopping docker-compose";
-	@docker-compose stop
+	@lima nerdctl compose down
 ## db-init deletes any previos snippetbox database, creates a new one and populates it with basic info
 db-init:
 	@echo "\n> populating database";
