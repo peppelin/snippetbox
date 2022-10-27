@@ -132,7 +132,32 @@ func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, "signup.tmpl", data)
 }
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Create a new user")
+	var form userSignupForm
+	err := app.DecodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
+
+	// Checking all validations
+	form.Validator.CheckField(form.Validator.NotBlank(form.Email), "email", "email can't be blank")
+	form.Validator.CheckField(form.Validator.NotBlank(form.Name), "name", "name can't be blank")
+	form.Validator.CheckField(form.Validator.NotBlank(form.Password), "password", "password can't be blank")
+	form.Validator.CheckField(form.Validator.MinChars(form.Password, 8), "password", "password must be at least 8 chars long")
+	form.Validator.CheckField(form.Validator.Matches(form.Email, validator.EmailRX), "email", "email must be a valid email address")
+
+	fmt.Println("HOLA", form.Validator.Valid())
+
+	// if any checks before failed, we render the errors
+	if !form.Validator.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		fmt.Printf("%+v\n", data)
+		app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
+		return
+	}
+
+	// Otherwise send the placeholder response (for now!).
+	fmt.Fprintln(w, "Create a new user...")
 }
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "logout a user")
