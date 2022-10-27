@@ -133,7 +133,53 @@ func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, "login.tmpl", data)
 }
 func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Authenticate a new user")
+	var form userLoginForm
+
+	err := app.DecodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+	// Doing form validations
+	form.Validator.CheckField(form.Validator.NotBlank(form.Email), "email", "email can't be blank")
+	form.Validator.CheckField(form.Validator.NotBlank(form.Password), "password", "password can't be blank")
+	form.Validator.CheckField(form.Validator.Matches(form.Email, validator.EmailRX), "email", "email must be a valid email address")
+
+	// if any checks before failed, we render the errors
+	if !form.Validator.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
+		return
+	}
+
+	// check if the credentials are valid
+	id, err := app.users.Authenticate(form.Email, form.Password)
+
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			form.AddNonFieldError("email or password is not correct")
+
+			data := app.newTemplateData(r)
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
+		} else {
+			app.serverError(w, err)
+		}
+	}
+
+	// Use the renewToken to change sessionid.
+	err = app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	// add the id to the current session
+	app.sessionManager.Put(r.Context(), "authenticated", id)
+
+	// redirect to create snippet page
+	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
+
 }
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
@@ -145,6 +191,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	err := app.DecodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
+		return
 	}
 
 	// Checking all validations
