@@ -145,19 +145,33 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	form.Validator.CheckField(form.Validator.MinChars(form.Password, 8), "password", "password must be at least 8 chars long")
 	form.Validator.CheckField(form.Validator.Matches(form.Email, validator.EmailRX), "email", "email must be a valid email address")
 
-	fmt.Println("HOLA", form.Validator.Valid())
-
 	// if any checks before failed, we render the errors
 	if !form.Validator.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
-		fmt.Printf("%+v\n", data)
 		app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
 		return
 	}
 
-	// Otherwise send the placeholder response (for now!).
-	fmt.Fprintln(w, "Create a new user...")
+	// Trying to create the record in the database
+	err = app.users.Insert(form.Name, form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			form.Validator.AddFieldError("email", "email address already in use")
+
+			data := app.newTemplateData(r)
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+	// if all is successful, flash the ok message
+	app.sessionManager.Put(r.Context(), "flash", "Your signup was successful. Please sign in.")
+
+	// Redirect to the login age
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "logout a user")
