@@ -175,7 +175,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// add the id to the current session
-	app.sessionManager.Put(r.Context(), "authenticated", id)
+	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
 	// redirect to create snippet page
 	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
