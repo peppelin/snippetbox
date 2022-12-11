@@ -20,7 +20,8 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
 	// Unprotected application using dynamic chain
-	dynamic := alice.New(app.sessionManager.LoadAndSave)
+	// use noSurf middleware on all dynamic routes
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
 
 	// Update routes with the new router
 	//and change the type from router.handlerFunc to router.Handler
