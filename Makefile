@@ -6,6 +6,7 @@ export $(shell sed 's/=.*//' .env)
 
 go_path = PATH=${PATH}:~/go/bin GOPATH=~/go 
 go_env = $(go_path) GO111MODULE=on
+go_root = $(GOROOT)
 
 docker_images = mysql
 # test_packages = $(shell go list ./... | grep -v 'snippetbox$$' | grep -v '/test')
@@ -44,5 +45,6 @@ db-init:
 	@mysql -h 127.0.0.1 -uroot -p < setup_mysql.sql
 ## cert-gen generates the tls certificates and stores intop tls folder
 cert-gen:
+	@rm -rf tls;
 	@mkdir tls; 
-	@cd tls && go run /Users/gargallo/.gvm/gos/go1.19.2/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+	@cd tls && go run ${go_root}/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
